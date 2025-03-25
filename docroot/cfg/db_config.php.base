@@ -1,0 +1,15 @@
+<?php
+$dsn = 'mysql:host=###DB HOST HERE ###; dbname=###DB NAME HERE###; charset=utf8mb4';
+$db_user = '###DB USER HERE###';
+$db_pass = '###DB PASS HERE###';
+
+try{
+	$dbh = new PDO($dsn, $db_user, $db_pass);
+}catch (PDOException $e){
+	print('Error:'.$e->getMessage());
+	die();
+}
+
+
+$insert_pat = "/-|^mitsumori(.*)|お時間指定料|車種ご指定料（ゲート車）|部材|木台/";
+?>

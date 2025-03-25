@@ -1,0 +1,25 @@
+<?php
+define('ENV', 'local');
+
+$config = [
+    'local' => [
+        'url' => 'http://setsu-bi.local',
+        'callback_url' => 'http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php',
+        'callback_url_encode' => urlencode('http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php'),
+    ],
+    'dev' => [
+        'url' => 'http://setsu-bi.local',
+        'callback_url' => 'http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php',
+        'callback_url_encode' => urlencode('http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php'),
+    ],
+    'stg' => [
+        'url' => 'http://setsu-bi.local',
+        'callback_url' => 'http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php',
+        'callback_url_encode' => urlencode('http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php'),
+    ],
+    'prd' => [
+        'url' => 'http://setsu-bi.local',
+        'callback_url' => 'http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php',
+        'callback_url_encode' => urlencode('http://setsu-bi.local/filesystem/getAPI/e-setsubi/yv2/code1v2.php'),
+    ]
+];
