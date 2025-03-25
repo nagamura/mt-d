@@ -1,0 +1,276 @@
+@extends('layouts.main')
+@section('title', '在庫確認一覧')
+@section('content')
+<link rel="stylesheet" href="{{ asset('/assets/css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/css/toggleSwitch.css') }}">
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.0/js/jquery.tablesorter.min.js"></script>
+<script src="//unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
+<script src="{{ asset('/assets/js/idleTimer.js') }}"></script>
+<script src="{{ asset('/assets/js/stock-admin.js') }}"></script>
+<script src="{{ asset('/assets/js/ajax_functions.js') }}"></script>
+<div id="right-parent" class="p-5 lg:w-full lg:mt-0 bg-white">
+  <div class="z-10 text-right fixed bottom-4 right-4">
+    <p class="inline-block bg-white px-4 py-2 rounded-3xl" style="box-shadow: 0 2px 5px rgba(0,0,0,0.26)">最終更新日時は、<?php echo date("Y/m/d H:i:s"); ?> です。</p>
+  </div>
+<style>
+  #adminFilter input[type="text"]:not(:placeholder-shown) {
+  background-color: rgba(16,185,129,0.2);
+  }
+  #adminFilter input[type="date"]:not(:placeholder-shown) {
+  background-color: rgba(16,185,129,0.2);
+  }
+</style>
+
+<form id="adminFilter" class="contents" action="/stock/admin.php" method="get">
+  <div class="grid grid-cols-12 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <p class="col-span-3 lg:col-span-1 lg:row-start-1">仕入先</p>
+    <button id="supplierFilter-ALL" name="supplier" class="relative col-span-1 rounded shadow p-2 cursor-pointer hover:opacity-75 lg:row-start-2 lg:col-span-1" value="ALL">ALL</button>
+    @foreach ($suppliers as $supplier)
+    <button id="supplierFilter-{{ $supplier->code }}" name="supplier" class="relative col-span-1 rounded shadow p-2 cursor-pointer hover:opacity-75 lg:row-start-2 lg:col-span-1" value="{{ $supplier->id }}">{{ $supplier->display_name }}</button>
+    @endforeach
+  </div>
+  <div class="grid lg:grid-cols-8 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <p class="col-span-3 lg:col-span-1 lg:row-start-1">部署</p>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-2" onChange="toggleMall()" name="domainFilter" value="isAll" >
+      <span class="ml-1 text-gray-700">全部署</span>
+    </label>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-2" onChange="toggleMall()" name="domainFilter" value="2" >
+      <span class="ml-1 text-gray-700">第2施設部</span>
+    </label>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-2" onChange="toggleMall()" name="domainFilter" value="3" >
+      <span class="ml-1 text-gray-700">第3施設部</span>
+    </label>
+
+    <fieldset class="contents" id="mallFilterItems">
+      <div class="form-parts  lg:row-start-2">
+        <div class="border-b border-black parts-midashi">セツビコム</div>
+        <ul>
+          <li><span class="all-check"><label for="S"><input onchange="allCheck(event.target)" type="checkbox" id="S" name="dai3AllChecks[]" value="setsu"  />全てにチェックする</label></span></li>
+          <li><label for="s1"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_本店_setsu-bicom" id="s1"  />セツビコム 本店</label></li>
+          <li><label for="s7"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_進捗_setsu-bicom" id="s7"  />セツビコム 進捗</label></li>
+          <li><label for="s2"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_本店_aircon-setsubicom" id="s2"  />セツビコム 別館</label></li>
+          <li><label for="s3"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_楽天_setsubi" id="s3"  />セツビコム 楽天市場</label></li>
+          <li><label for="s4"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_楽天_aircon-setsubi" id="s4"  />セツビコム 楽天市場 別館</label></li>
+          <li><label for="s5"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_Yahoo_setsubicom" id="s5"  />セツビコム Yahoo!本店</label></li>
+          <li><label for="s6"><input type="checkbox" class="checkGroupS" name="mallFilters[]" value="s_Yahoo_aircon-setsubi" id="s6"  />セツビコム Yahoo!別館</label></li>
+        </ul>
+      </div>
+
+      <div class="form-parts  lg:row-start-2">
+        <div class="border-b border-black parts-midashi">イーセツビ</div>
+        <ul>
+          <li><span class="all-check"><label for="E"><input onchange="allCheck(event.target)" type="checkbox" id="E" name="dai3AllChecks[]" value="e-setsu"  />全てにチェックする</label></span></li>
+          <li><label for="e1"><input type="checkbox" class="checkGroupE" name="mallFilters[]" value="e_本店_e-setsubibiz" id="e1"  />イーセツビ 本店</label></li>
+          <li><label for="e5"><input type="checkbox" class="checkGroupE" name="mallFilters[]" value="e_進捗_e-setsubibiz" id="e5"  />イーセツビ 進捗</label></li>
+          <li><label for="e2"><input type="checkbox" class="checkGroupE" name="mallFilters[]" value="e_楽天_e-setsubi" id="e2"  />イーセツビ 楽天市場</label></li>
+          <li><label for="e3"><input type="checkbox" class="checkGroupE" name="mallFilters[]" value="e_Yahoo_e-setsubi" id="e3"  />イーセツビ Yahoo!本店</label></li>
+          <li><label for="e4"><input type="checkbox" class="checkGroupE" name="mallFilters[]" value="e_Yahoo_e-setsubi-annex" id="e4"  />イーセツビ Yahoo!別館</label></li>
+        </ul>
+      </div>
+
+      <div class="form-parts lg:row-start-2">
+        <div class="border-b border-black parts-midashi">空調センター</div>
+        <ul>
+          <li><span class="all-check"><label for="K"><input onchange="allCheck(event.target)" type="checkbox" id="K" name="dai3AllChecks[]" value="kucho"  />全てにチェックする</label></span></li>
+          <li><label for="k1"><input type="checkbox" class="checkGroupK" name="mallFilters[]" value="k_本店_tokyo-airconnet" id="k1"  />空調センター 本店</label></li>
+          <li><label for="k5"><input type="checkbox" class="checkGroupK" name="mallFilters[]" value="k_進捗_tokyo-airconnet" id="k5"  />空調センター 進捗</label></li>
+          <li><label for="k2"><input type="checkbox" class="checkGroupK" name="mallFilters[]" value="k_楽天_tokyo-aircon" id="k2"  />空調センター 楽天市場</label></li>
+          <li><label for="k3"><input type="checkbox" class="checkGroupK" name="mallFilters[]" value="k_Yahoo_tokyo-aircon" id="k3"  />空調センター Yahoo!本店</label></li>
+          <li><label for="k4"><input type="checkbox" class="checkGroupK" name="mallFilters[]" value="k_Yahoo_tokyo-aircon-ex" id="k4"  />空調センター Yahoo!別館</label></li>
+        </ul>
+      </div>
+    </fieldset>
+  </div>
+  
+  <div class="grid lg:grid-cols-8 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <p class="col-span-3 lg:col-span-2 lg:row-start-1">キーワード検索<span class="text-blue-500 cursor-pointer" onclick="resetValue('query')">クリア</span></p>
+    <p class="col-span-2 lg:col-span-2 lg:row-start-1">日時(から)<span class="text-blue-500 cursor-pointer" onclick="resetValue('start')">クリア</span></p>
+    <p class="col-span-2 lg:col-span-2 lg:row-start-1">日時(まで)<span class="text-blue-500 cursor-pointer" onclick="resetValue('end')">クリア</span></p>
+    <input id="query" class="p-2 col-span-3 col-start-1 border rounded hover:shadow lg:col-span-2 lg:row-start-2" placeholder="キーワードを入力してください" type='text' name='query' maxlength='30' size='30' value="">
+    <input id="start" class="p-2 col-span-3 border rounded hover:shadow lg:col-span-2 lg:row-start-2" type='text' name='start' value="" placeholder="日付を入力してください" onfocus="(this.type='date')">
+    <input id="end" class="p-2 col-span-3 border rounded hover:shadow lg:col-span-2 lg:row-start-2" type='text' name='end' value="" placeholder="日付を入力してください" onfocus="(this.type='date')">
+  </div>
+
+  <div class="grid lg:grid-cols-8 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <p class="col-span-3 lg:col-span-2 lg:row-start-1">担当者<span class="text-blue-500 cursor-pointer" onclick="resetValue('person_employee_codes')">クリア</span></p>
+    <p class="col-span-3 lg:col-span-2 lg:row-start-1">入力者<span class="text-blue-500 cursor-pointer" onclick="resetValue('inputter_employee_codes')">クリア</span></p>
+    <input id="person_employee_codes" class="p-2 col-span-3 col-start-1 border rounded hover:shadow lg:col-span-2 lg:row-start-2" placeholder="社員番号を入力してください (カンマ区切りで複数可)" type='text' name='person_employee_codes' pattern="^\d[\d,]*\d$" maxlength='60' size='30' value="">
+    <input id="inputter_employee_codes" class="p-2 col-span-3 col-start-1 border rounded hover:shadow lg:col-span-2 lg:row-start-2" placeholder="社員番号を入力してください (カンマ区切りで複数可)" type='text' name='inputter_employee_codes' pattern="^\d[\d,]*\d$" maxlength='60' size='30' value="">
+  </div>
+
+  <div class="grid lg:grid-cols-8 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <p class="col-span-3 lg:col-span-1 lg:row-start-1">ステータス</p>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-6" name="statusFilter" value="all" checked><span class="ml-1 text-gray-700">ALL</span>
+    </label>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-6" name="statusFilter" value="1" ><span class="text-gray-700"><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">ご確認ください</span></span>
+    </label>
+    <label class="p-2 col-span-2 inline-flex items-center lg:col-span-1 lg:row-start-2">
+      <input type="radio" class="form-checkbox h-5 w-5 text-yellow-600 lg:row-start-6" name="statusFilter" value="0" ><span class="text-gray-700"><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-white-100 text-black-800 border border-white-500">お待ちください</span></span>
+    </label>
+  </div>
+
+  <div class="grid lg:grid-cols-8 gap-4 gap-y-1 mb-6 grid-cols-6">
+    <input class="col-span-3 col-start-1 rounded shadow p-2 cursor-pointer hover:opacity-75 text-white bg-green-500 lg:row-start-1 lg:col-span-1" type='submit' value='絞り込む'>
+    <p class="col-span-6 self-center">
+      &#x1f447; 過去3日以内に更新があった在庫確認を表示しています。更に過去分を表示したい場合は、日時で絞り込みしてください。            </p>
+  </div>
+</form>
+<table id="fav-table" class="text-left min-w-full mb-12">
+  <thead>
+    <tr>
+      <th class="sticky top-0">在確No.</th>
+      <th class="sticky top-0" width="5%">日時</th>
+      <th class="sticky top-0">担当者</th>
+      <th class="sticky top-0">仕入先</th>
+      <th class="sticky top-0" width="10%">送り先</th>
+      <th class="sticky top-0" width="5%">状態</th>
+      <th class="sticky top-0" width="5%">仮発注</th>
+      <th class="sticky top-0">型番</th>
+      <th class="sticky top-0">数量</th>
+      <th class="sticky top-0" width="5%">備考</th>
+      <th class="sticky top-0">入力者</th>
+      <th class="sticky top-0" width="3%">在庫</th>
+      <th class="sticky top-0">連絡</th>
+      <th class="sticky top-0">操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>S1227104</td>
+      <td>2024-06-12 14:07:54</td>
+      <td>瀬戸口(280)</td>
+      <td>菱電</td>
+      <td id="prefCity-44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3">長野県松本市</td>
+      <td><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 whitespace-nowrap cursor-default" title="最後に連絡を行った日時から一定時間が経過すると、在庫確認がクローズされます。この在庫確認は、あと14日でクローズされます。">&#x23f3;14日</span></td>
+      <td><input class="preOrderCheck" type="checkbox" id="preOrderCheck-44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3" disabled><label onclick="preOrderDialogComponent(event.target)" class="cursor-pointer whitespace-nowrap" for="preOrderCheck-44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3" value="44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3" title="この在庫確認の商品で仮発注を行います。">仮発注</label></td>
+      <td><a href="/quotation/admin.php?confirmFilter=1&closeFilter=1&query=M1005528" class="text-blue-600 underline">見積(M1005528)</a></td>
+      <td>1</td>
+      <td></td>
+      <td>瀬戸口(280)</td>
+      <td></td>
+      <td style="background-color: rgba(254,226,226);">
+	<ul id="posts-44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3">
+	  <li class="list-none mb-1">
+	    <span class="inline-block rounded px-1 border border-gray-400 mr-1">瀬戸口: 在庫状況だけでもお知らせ願います。</span>
+	    <span class="text-gray-400 whitespace-nowrap">06/12 16:15</span>
+	  </li>
+	  <li class="list-none mb-1">
+	    <span class="inline-block rounded px-1 border border-gray-400 mr-1">菱電:  PCAV-P280DME3　7/22生産15台　<br>その他在庫有　AM11時〆⇒中三日</span>
+	    <span class="text-gray-400 whitespace-nowrap">06/12 17:02</span>
+	  </li>
+	</ul>
+	<div class="flex">
+	  <textarea id="inputText-44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3" class="px-1 border border-gray-400 rounded flex-auto" rows="1" cols="25"></textarea>
+	  <button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="sendPost(event.target)" value="44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3">送信</button>
+	  <button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="proxySendPost(event.target)" value='{ "proxyUserId": "16", "hashId": "44a2f53cffba36cd306fd3ba9f2d79b0b2cefdafbab2539edbd721b08aa4b9b3"}'>代理</button>
+	</div>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>S1227177</td>
+      <td>2024-06-12 16:57:42</td>
+      <td>平田(310)</td>
+      <td>東芝</td>
+      <td id="prefCity-1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543">和歌山県海南市</td>
+      <td>
+	<span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 whitespace-nowrap cursor-default" title="最後に連絡を行った日時から一定時間が経過すると、在庫確認がクローズされます。この在庫確認は、あと14日でクローズされます。">&#x23f3;14日</span></td>
+      <td>
+	<input class="preOrderCheck" type="checkbox" id="preOrderCheck-1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543" disabled>
+	<label onclick="preOrderDialogComponent(event.target)" class="cursor-pointer whitespace-nowrap" for="preOrderCheck-1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543" value="1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543" title="この在庫確認の商品で仮発注を行います。">仮発注
+	</label>
+      </td>
+      <td>GWSA08013MUB</td>
+      <td>1式</td>
+      <td></td>
+      <td>平田(310)</td>
+      <td></td>
+      <td style="background-color: rgba(254,226,226);">
+	<ul id="posts-1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543">
+	  <li class="list-none mb-1">
+	    <span class="inline-block rounded px-1 border border-gray-400 mr-1">東芝: 6月15日着最短です</span>
+	    <span class="text-gray-400 whitespace-nowrap">06/12 17:00</span>
+	  </li>
+	</ul>
+	<div class="flex">
+	  <textarea id="inputText-1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543" class="px-1 border border-gray-400 rounded flex-auto" rows="1" cols="25"></textarea>
+	  <button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="sendPost(event.target)" value="1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543">送信</button>
+	  <button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="proxySendPost(event.target)" value='{ "proxyUserId": "8", "hashId": "1603050d0379b863891bcb2cbdb153b3a4e0cd40a83fa707393eee54e0ab5543"}'>代理</button>
+	</div>
+      </td>
+      <td>
+	<svg id="1227177" value='{"orderId": "116628_310", "supplier": "10122", "groupId": "1227177"}' onclick="openToOptionDialog(event)" metadata="2" class="cursor-pointer" width="15" height="15" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+	  <path class="pointer-events-none" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+	</svg>
+      </td>
+    </tr>
+    <tr>
+      <td rowspan='2'>S1226973</td>
+      <td rowspan='2'>2024-06-12 09:16:28</td>
+      <td rowspan='2'>中山(323)</td>
+      <td rowspan='2'>九州日立</td>
+      <td rowspan='2' id="prefCity-55fe5b8e9c34b39369517fb766a5edda6505e6d26f65e0a04efa2e3155b3a316">東京都八丈島八丈町三根</td>
+      <td rowspan='2'><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap cursor-default">&#x1f525;急ぎ</span><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 whitespace-nowrap cursor-default" title="最後に連絡を行った日時から一定時間が経過すると、在庫確認がクローズされます。この在庫確認は、あと14日でクローズされます。">&#x23f3;14日</span></td>
+      <td rowspan='2'><input class="preOrderCheck preorderNg" type="checkbox" disabled><label class="whitespace-nowrap" title="仮発注不可の仕入先の為、この在庫確認を仮発注することはできません。">仮発注</label></td>
+      <td>RPC-GP56RSH8</td>
+      <td>1式</td>
+      <td>離島配送料を早めに教えていただければ幸いです</td>
+      <td>中山(323)</td>
+      <td></td>
+      <td style="background-color: rgba(255,255,255);"><ul id="posts-55fe5b8e9c34b39369517fb766a5edda6505e6d26f65e0a04efa2e3155b3a316"><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">九州日立: 離島送料を確認いたします。<br>しばらくお待ちくださいませ。</span><span class="text-gray-400 whitespace-nowrap">06/12 09:43</span></li><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">中山: こちら本日中に回答出そうでしょうか</span><span class="text-gray-400 whitespace-nowrap">06/12 16:51</span></li></ul><div class="flex"><textarea id="inputText-55fe5b8e9c34b39369517fb766a5edda6505e6d26f65e0a04efa2e3155b3a316" class="px-1 border border-gray-400 rounded flex-auto" rows="1" cols="25"></textarea><button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="sendPost(event.target)" value="55fe5b8e9c34b39369517fb766a5edda6505e6d26f65e0a04efa2e3155b3a316">送信</button><button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="proxySendPost(event.target)" value='{ "proxyUserId": "5", "hashId": "55fe5b8e9c34b39369517fb766a5edda6505e6d26f65e0a04efa2e3155b3a316"}'>代理</button></div></td>
+      <td rowspan='2'><svg id="1226973" value='{"orderId": "116512_323", "supplier": "6010", "groupId": "1226973"}' onclick="openToOptionDialog(event)" metadata="2" class="cursor-pointer" width="15" height="15" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="pointer-events-none" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg></td>
+    </tr>
+    <tr class="tablesorter-childRow">
+      <td>RPC-GP56RSHJ8</td>
+      <td>1式</td>
+      <td>離島配送料を早めに教えていただければ幸いです</td>
+      <td>中山(323)</td>
+      <td></td>
+      <td style="background-color: rgba(254,226,226);"><ul id="posts-cc723d2b6fc9a2091ef206f9aea24616ad7cdd1960036a019e415b1ea7d26a3f"><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">中山: こちらは回答不要です</span><span class="text-gray-400 whitespace-nowrap">06/12 09:36</span></li><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">九州日立: 承知いたしました。</span><span class="text-gray-400 whitespace-nowrap">06/12 09:43</span></li></ul><div class="flex"><textarea id="inputText-cc723d2b6fc9a2091ef206f9aea24616ad7cdd1960036a019e415b1ea7d26a3f" class="px-1 border border-gray-400 rounded flex-auto" rows="1" cols="25"></textarea><button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="sendPost(event.target)" value="cc723d2b6fc9a2091ef206f9aea24616ad7cdd1960036a019e415b1ea7d26a3f">送信</button><button class="p-1 border border-gray-300 bg-white rounded self-end" onClick="proxySendPost(event.target)" value='{ "proxyUserId": "5", "hashId": "cc723d2b6fc9a2091ef206f9aea24616ad7cdd1960036a019e415b1ea7d26a3f"}'>代理</button></div></td>
+    </tr>
+    <tr>
+      <td rowspan='3'>S1227145<div><form action="/stock/make_order/call.php" target="_blank" method="post"><input type="hidden" name="orderId" value="1227145"><input type="submit" value="受注作成" style="background-color: #fff; color: darkcyan; padding: 0.25rem; border-radius: 0.25rem; border: 1px solid darkcyan; cursor: pointer;"></form></div></td>
+      <td rowspan='3'>2024-06-12 15:21:55</td>
+      <td rowspan='3'>平田(310)</td>
+      <td rowspan='3'>山善</td>
+      <td rowspan='3' id="prefCity-1d900a5b294770352344ba3b2ab78bb8911d64230bf5ff20a4612c477a4e22c8">愛知県小牧市</td>
+      
+      
+      
+      <td rowspan='3'><span class="ml-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 whitespace-nowrap cursor-default" title="最後に連絡を行った日時から一定時間が経過すると、在庫確認がクローズされます。
+																					     この在庫確認は、あと14日でクローズされます。">&#x23f3;14日</span></td>
+      <td rowspan='3'><input class="preOrderCheck" type="checkbox" id="preOrderCheck-1d900a5b294770352344ba3b2ab78bb8911d64230bf5ff20a4612c477a4e22c8" checked disabled><label onclick="window.open('/preorder/admin.php?query=K1227145', '_self')" class="cursor-pointer whitespace-nowrap" for="preOrderCheck-1d900a5b294770352344ba3b2ab78bb8911d64230bf5ff20a4612c477a4e22c8" value="1d900a5b294770352344ba3b2ab78bb8911d64230bf5ff20a4612c477a4e22c8" title="クリックすると、この仮発注を確認する画面にジャンプします。">仮発注済</label></td>
+      <td>SZRG40BYT</td>
+      <td>5式</td>
+      <td>フレッシュホワイト</td>
+      <td>平田(310)</td>
+      <td></td>
+      <td style="background-color: rgba(255,255,255);"><ul id="posts-1d900a5b294770352344ba3b2ab78bb8911d64230bf5ff20a4612c477a4e22c8"><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">山善: 6/13AM中ご発注で6/18着最短です。最寄り20</span><span class="text-gray-400 whitespace-nowrap">06/12 15:57</span></li><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">平田: 仮発注をしました。 (システム)</span><span class="text-gray-400 whitespace-nowrap">06/12 16:47</span></li></ul><div class="flex"><textarea class="px-1 flex-auto" rows="1" cols="25" disabled>仮発注済みの為、操作不可</textarea></div></td>
+      <td rowspan='3'><svg id="1227145" value='{"orderId": "116610_310", "supplier": "8005", "groupId": "1227145"}' onclick="openToOptionDialog(event)" metadata="1" class="cursor-pointer" width="15" height="15" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="pointer-events-none" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg></td>
+    </tr>
+    <tr class="tablesorter-childRow">
+      <td>KDBJ48K71F</td>
+      <td>8式</td>
+      <td></td>
+      <td>平田(310)</td>
+      <td></td>
+      <td style="background-color: rgba(254,226,226);"><ul id="posts-03c4df38f858ccf9b58ba3985eeb74598e0c09833f533778b4b990983b5b6698"><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">山善: 納期要調整です。</span><span class="text-gray-400 whitespace-nowrap">06/12 15:57</span></li></ul><div class="flex"><textarea class="px-1 flex-auto" rows="1" cols="25" disabled>仮発注済みの為、操作不可</textarea></div></td>
+    </tr>
+    <tr class="tablesorter-childRow">
+      <td>SZRG224BANW</td>
+      <td>1式</td>
+      <td>フレッシュホワイト</td>
+      <td>平田(310)</td>
+      <td></td>
+      <td style="background-color: rgba(254,226,226);"><ul id="posts-898cee5bc794b91f5fd0d8bf83671970182d42fb4ee81f542c0f85ed2c4aa7e1"><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">山善: 6/13AM中ご発注で6/20着最短です。</span><span class="text-gray-400 whitespace-nowrap">06/12 15:57</span></li><li class="list-none mb-1"><span class="inline-block rounded px-1 border border-gray-400 mr-1">山善: 本件一括ですと、大口扱いとなります。<br>１週間以上前にはご指示をお願いいたします。</span><span class="text-gray-400 whitespace-nowrap">06/12 15:57</span></li></ul><div class="flex"><textarea class="px-1 flex-auto" rows="1" cols="25" disabled>仮発注済みの為、操作不可</textarea></div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+@endsection

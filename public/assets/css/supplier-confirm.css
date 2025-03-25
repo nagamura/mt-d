@@ -1,0 +1,140 @@
+body {
+   background-color: #f6f6f6;
+}
+
+table {
+   border-collapse: collapse;
+   font-size: 15px;
+}
+
+input[type="submit"] {
+   border-radius: 10px;
+   color: #ffffff !important;
+   font-weight: bold;
+   display: inline-block;
+   position: relative;
+   text-align: center;
+   box-shadow: 0 1px 2px 0 rgba(100, 100, 100, 0.5);
+   box-sizing: border-box;
+   white-space: nowrap;
+   background-color: #ec4f3e;
+   font-size: 17px;
+   padding: 23px 48px 20px;
+   border: 0;
+   font-family: 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', sans-serif;
+   cursor: pointer;
+   margin: 0;
+   -webkit-appearance: none;
+   opacity: 1;
+   line-height: 1.4;
+   outline: none;
+}
+
+textarea {
+   width: 300px;
+   height: 40px;
+   line-height: 1.5em;
+   margin: auto;
+   padding: 9px 10px;
+}
+
+th {
+   padding: 5px 10px;
+   white-space: nowrap;
+}
+
+td {
+   padding: 15px 10px;
+}
+
+.ub {
+   border-bottom: 1px solid #EFEFEF;
+}
+
+input[type="submit"],
+   input[type="text"],
+      input[type="date"],
+	 input[type="time"],
+	    input[type="number"],
+	       input[type="tel"],
+		  select,
+		     textarea,
+			button {
+			   -moz-appearance: none;
+			   -webkit-appearance: none;
+			   -webkit-box-shadow: none;
+			   box-shadow: none;
+			   outline: none;
+			   border: none;
+			}
+
+input[type="text"],
+   input[type="date"],
+      input[type="time"],
+	 input[type="number"],
+	    input[type="tel"],
+	       select,
+		  textarea {
+		     background-color: #ffffff;
+		     border: 1px #cccccc solid;
+		     font-size: 16px;
+		     padding: 9px 10px;
+		     transition: 0.8s;
+		     border-radius: 0;
+		  }
+
+input[type="time"] {
+   width: 85px;
+   padding: 6px 10px;
+}
+
+input[type="submit"] {
+   border-radius: 10px;
+   color: #ffffff !important;
+   font-weight: bold;
+   display: inline-block;
+   position: relative;
+   text-align: center;
+   box-shadow: 0 1px 2px 0 rgba(100, 100, 100, 0.5);
+   box-sizing: border-box;
+   white-space: nowrap;
+   background-color: #ec4f3e;
+   font-size: 17px;
+   padding: 23px 48px 20px;
+   border: 0;
+   font-family: 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', sans-serif;
+   cursor: pointer;
+   margin: 0;
+   -webkit-appearance: none;
+   opacity: 1;
+   line-height: 1.4;
+   outline: none;
+}
+
+input[type="text"]:focus,
+   input[type="date"]:focus,
+      input[type="time"]:focus,
+	 input[type="number"]:focus,
+	    input[type="tel"]:focus,
+	       textarea:focus,
+		  select:focus {
+		     background: #aadaf0;
+		     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		  }
+
+.wrap {
+   display: block;
+   margin-bottom: 20px;
+}
+
+.ttl {
+   font-weight: bold;
+}
+
+#news {
+   display: block;
+   width: 80%;
+   margin-bottom: 25px;
+   background-color: #FFFFFF;
+   padding: 10px;
+}

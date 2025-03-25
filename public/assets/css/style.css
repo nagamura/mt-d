@@ -1,0 +1,91 @@
+.loupe {
+  background-color: #555;
+  background: rgba(0, 0, 0, 0.25);
+  border: 5px solid rgba(0, 0, 0, 0);
+  cursor: url(blank.png), url(blank.cur), none;
+}
+
+input[type="checkbox"].preOrderCheck {
+  display: none;
+}
+
+input[type="checkbox"].preOrderCheck + label {
+  background-color: #fff;
+  color: #008b8b;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid #008b8b;
+}
+
+input[type="checkbox"].preOrderCheck.preorderNg + label {
+  background-color: #bbb;
+  color: #fff;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: none;
+}
+
+input[type="checkbox"].preOrderCheck:hover + label {
+  background-color: darkcyan;
+  border: none;
+  color: #fff;
+}
+
+input[type="checkbox"].preOrderCheck:checked + label {
+  background-color: darkcyan;
+  border: none;
+  color: #fff;
+}
+
+input[type="checkbox"].requestCheck {
+  display: none;
+}
+
+input[type="checkbox"].requestCheck + label {
+  background-color: #fff;
+  color: #0e57c5;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid #0e57c5;
+}
+
+input[type="checkbox"].requestCheck.preorderNg + label {
+  background-color: #bbb;
+  color: #fff;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  border: none;
+}
+
+input[type="checkbox"].requestCheck:hover + label {
+  background-color: #0e57c5;
+  border: none;
+  color: #fff;
+}
+
+input[type="checkbox"].requestCheck:checked + label {
+  background-color: #0e57c5;
+  border: none;
+  color: #fff;
+}
+
+input[type="checkbox"].isEmptyCheck {
+  display: none;
+}
+
+input[type="checkbox"].isEmptyCheck + label {
+  background-color: #eee;
+  color: #999;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+input[type="checkbox"].isEmptyCheck:hover + label {
+  background-color: black;
+  color: #fff;
+}
+
+input[type="checkbox"].isEmptyCheck:checked + label {
+  background-color: black;
+  color: #fff;
+}
